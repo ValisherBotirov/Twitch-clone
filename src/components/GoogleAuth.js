@@ -1,3 +1,4 @@
+import { toHaveDisplayValue } from "@testing-library/jest-dom/dist/matchers";
 import React, { useEffect, useState } from "react";
 
 // ===========================================
@@ -61,8 +62,64 @@ import React, { useEffect, useState } from "react";
 // =======================
 
 class GoogleAuth extends React.Component {
+  state = { kirganmisan: null };
+  auth1 = null;
+  componentDidMount() {
+    window.gapi.load("auth2", () => {
+      window.gapi.auth2
+        .init({
+          client_id:
+            "626894082646-qkt565ptln62ll8b8iunkug00sga263o.apps.googleusercontent.com",
+          plugin_name: "TwitchClone",
+          scope: "email",
+        })
+        .then(() => {
+          console.log(window.gapi.auth2.getAuthInstance());
+          this.auth1 = window.gapi.auth2.getAuthInstance();
+          this.setState({ kirganmisan: this.auth1.isSignedIn.get() });
+          this.auth1.isSignedIn.listen(this.changeIsSignedIn);
+        });
+    });
+  }
+
+  changeIsSignedIn = (qanday) => {
+    this.setState({ kirganmisan: qanday });
+  };
+
+  signInClick = () => {
+    return this.auth1.signIn();
+  };
+  signOutClick = () => {
+    return this.auth1.signOut();
+  };
+
+  renderHtml = () => {
+    if (this.state.kirganmisan === null) {
+      return <div>Kuting...</div>;
+    } else if (this.state.kirganmisan === true) {
+      return (
+        <div>
+          <button className="ui button google red" onClick={this.signOutClick}>
+            <i className="google icon"> Sign out</i>
+          </button>
+        </div>
+      );
+    } else if (this.state.kirganmisan === false) {
+      return (
+        <div>
+          <button className="ui button google green" onClick={this.signInClick}>
+            <i className="google icon"> Sign in</i>
+          </button>
+          <img
+            src={this.auth1.currentUser.get().getBasicProfile().getImageUrl()}
+          />
+        </div>
+      );
+    }
+  };
+
   render() {
-    return <div></div>;
+    return <div>{this.renderHtml()}</div>;
   }
 }
 export default GoogleAuth;
